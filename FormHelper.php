@@ -8,8 +8,6 @@ class FormHelper
 {
     public static function open(array $options = [])
     {
-        $route = $options['route'];
-
 
         $method = strtoupper($options['method'] ?? 'POST');
         $class = $options['class'] ?? '';
@@ -19,29 +17,40 @@ class FormHelper
 
         // Include method spoofing for DELETE and PUT requests
         $methodField = '';
-        if ($method === 'DELETE' || $method === 'PUT' || $method =='patch' || $method =='PATCH') {
+        if ($method === 'DELETE' || $method === 'PUT' || $method == 'patch' || $method == 'PATCH') {
 
             $methodField = '<input type="hidden" name="_method" value="' . $method . '">';
 
             $method = 'POST'; // Use POST as the actual method for form submission
         }
 
-        if (isset($options['method']) &&( $options['method'] == 'delete' || $options['method'] =='patch')){
-            $routeName = $options['route'][0];
-            $routeParams = array_slice($options['route'], 1);
-            $route= route($routeName, $routeParams);
-            return "<form action='{$route}' method='{$method}' class='{$class}' enctype='multipart/form-data'>"
-                . $csrfField
-                . $methodField ;
+        if (in_array($method, ['DELETE', 'PUT', 'PATCH'])) {
+            $methodField = '<input type="hidden" name="_method" value="' . $method . '">';
+            $method = 'POST'; // Use POST as the actual method for form submission
         }
-        $additional='';
-      if (isset($options['files']) && $options['files'] == true)
-      {
-          $additional='multipart/form-data';
-      }
+
+        $additional = '';
+        if (isset($options['files']) && $options['files'] == true) {
+            $additional = 'multipart/form-data';
+        }
+        // Determine the action URL
+        $actionUrl = '';
+        if (isset($options['url'])) {
+            // Use the provided URL directly
+            $actionUrl = $options['url'][0]; // Assuming URL is an array with one element
+        } elseif (isset($options['route'])) {
+            // Handle routing if route is set
+            if (is_array($options['route'])) {
+                $routeName = $options['route'][0];
+                $routeParams = array_slice($options['route'], 1);
+                $actionUrl = route($routeName, $routeParams);
+            } else {
+                $actionUrl = route($options['route']);
+            }
+        }
 
         // Return the form opening tag along with the CSRF field and method spoofing
-        return "<form action='" . route($route) . "' method='{$method}' class='{$class}'enctype='{$additional}'>" . $csrfField . $methodField;
+        return "<form action='{$actionUrl}' method='{$method}' class='{$class}'enctype='{$additional}'>" . $csrfField . $methodField;
     }
 
 
@@ -93,6 +102,7 @@ class FormHelper
         $class = $attributes['class'] ?? '';
         return "<button type='submit' class='{$class}'>{$value}</button>";
     }
+
     public static function select($name, $options = [], $selected = null, $attributes = [])
     {
         $class = $attributes['class'] ?? '';
@@ -144,9 +154,10 @@ class FormHelper
 
         // Add additional attributes if provided
         $attrString = '';
-        foreach ($attributes as $key => $val) {
-            $attrString .= "{$key}=\"{$val}\" ";
-        }
+        if (is_array($attributes) && count($attributes) > 0)
+            foreach ($attributes as $key => $val) {
+                $attrString .= "{$key}=\"{$val}\" ";
+            }
 
         // Return the final checkbox HTML code
         return "<input type='checkbox'  name='{$name}' value='" . htmlspecialchars($value ?? 1, ENT_QUOTES) . "' {$attrString} {$checked}>";
