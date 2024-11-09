@@ -194,4 +194,21 @@ class FormHelper
         // Return the number input HTML
         return "<input type='number' name='{$name}' value='" . htmlspecialchars($inputValue ?? '', ENT_QUOTES) . "' class='{$class}' placeholder='{$placeholder}' rows='{$rows}' cols='{$cols}' {$attrString}>";
     }
+
+    public static function file($name, $attributes = [])
+    {
+        // Get class and placeholder from attributes if provided
+        $class = $attributes['class'] ?? '';
+        $placeholder = $attributes['placeholder'] ?? '';
+        $value = self::getModelValue($name);
+
+        // Prepare additional attributes if provided
+        $attrString = '';
+        foreach ($attributes as $key => $val) {
+            $attrString .= "{$key}=\"{$val}\" ";
+        }
+
+        // Return the file input field
+        return "<input type='file' name='{$name}' value='" . htmlspecialchars($value, ENT_QUOTES) . "' class='{$class}' placeholder='{$placeholder}' {$attrString}>";
+    }
 }
