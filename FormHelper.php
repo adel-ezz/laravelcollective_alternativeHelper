@@ -180,6 +180,7 @@ class FormHelper
 
     public static function number($name, $value = null, $attributes = [])
     {
+
         $class = $attributes['class'] ?? '';
         $placeholder = $attributes['placeholder'] ?? '';
         $rows = $attributes['rows'] ?? 4;
@@ -190,7 +191,14 @@ class FormHelper
 
         // Prepare additional attributes if provided
         $attrString = '';
+
         foreach ($attributes as $key => $val) {
+            if ($key == 'disabled' && $val != false) {
+                $val = 'true';
+            }else
+            {
+                continue;
+            }
             $attrString .= "{$key}=\"{$val}\" ";
         }
 
