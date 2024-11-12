@@ -1,7 +1,9 @@
 <?php
 
-namespace App\Http\Helper;
+namespace App\Helper;
 
+use function csrf_token;
+use function old;
 use function route;
 
 class FormHelper
@@ -37,7 +39,8 @@ class FormHelper
         $actionUrl = '';
         if (isset($options['url'])) {
             // Use the provided URL directly
-            $actionUrl = $options['url'][0]; // Assuming URL is an array with one element
+            $actionUrl = is_string($options['url'])?$options['url'] : $options['url'][0]; // Assuming URL is an array with one element
+
         } elseif (isset($options['route'])) {
             // Handle routing if route is set
             if (is_array($options['route'])) {
@@ -194,7 +197,6 @@ class FormHelper
         // Return the number input HTML
         return "<input type='number' name='{$name}' value='" . htmlspecialchars($inputValue ?? '', ENT_QUOTES) . "' class='{$class}' placeholder='{$placeholder}' rows='{$rows}' cols='{$cols}' {$attrString}>";
     }
-
     public static function file($name, $attributes = [])
     {
         // Get class and placeholder from attributes if provided
